@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Expense Tracker</h1>
+            <button id="darkModeToggle" class="dark-mode-btn">🌙</button>
+        </header>
+
+        <!-- Summary Cards -->
+        <div class="summary">
+            <div class="card balance">
+                <span class="label">Saldo</span>
+                <h2 id="balance">Rp 0</h2>
+            </div>
+            <div class="card income">
+                <span class="label">Pemasukan</span>
+                <h2 id="income">Rp 0</h2>
+            </div>
+            <div class="card expense">
+                <span class="label">Pengeluaran</span>
+                <h2 id="expense">Rp 0</h2>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <form id="transactionForm">
+            <h3>Tambah Transaksi</h3>
+            
+            <input type="text" id="description" placeholder="Keterangan (contoh: Gaji, Makan siang)" required>
+
+            <div class="form-row">
+                <input type="number" id="amount" placeholder="Jumlah" min="1" required>
+                
+                <select id="type" required>
+                    <option value="income">Pemasukan</option>
+                    <option value="expense">Pengeluaran</option>
+                </select>
+            </div>
+
+            <select id="category" required>
+                <option value="Gaji">Gaji</option>
+                <option value="Makanan">Makanan</option>
+                <option value="Transport">Transport</option>
+                <option value="Belanja">Belanja</option>
+                <option value="Tagihan">Tagihan</option>
+                <option value="Hiburan">Hiburan</option>
+                <option value="Lainnya">Lainnya</option>
+            </select>
+
+            <button type="submit">+ Tambah</button>
+        </form>
+
+        <!-- Filter -->
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all">Semua</button>
+            <button class="filter-btn" data-filter="income">Pemasukan</button>
+            <button class="filter-btn" data-filter="expense">Pengeluaran</button>
+        </div>
+
+        <!-- Transaction List -->
+        <div class="transactions">
+            <h3>Riwayat Transaksi</h3>
+            <ul id="transactionList"></ul>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
