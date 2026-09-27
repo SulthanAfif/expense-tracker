@@ -18,20 +18,30 @@ darkModeToggle.addEventListener("click", () => {
     }
 });
 
-// ========== Expense Tracker ==========
+// ========== Elements ==========
 const transactionForm = document.getElementById("transactionForm");
+const formTitle = document.getElementById("formTitle");
 const descriptionInput = document.getElementById("description");
 const amountInput = document.getElementById("amount");
 const typeSelect = document.getElementById("type");
 const categorySelect = document.getElementById("category");
+const dateInput = document.getElementById("dateInput");
+const submitBtn = document.getElementById("submitBtn");
+const cancelEditBtn = document.getElementById("cancelEditBtn");
 const transactionList = document.getElementById("transactionList");
 const balanceEl = document.getElementById("balance");
 const incomeEl = document.getElementById("income");
 const expenseEl = document.getElementById("expense");
+const transactionCount = document.getElementById("transactionCount");
+const searchInput = document.getElementById("searchInput");
 const filterButtons = document.querySelectorAll(".filter-btn");
 
 let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
 let currentFilter = "all";
+let editIndex = null;
+
+// Set tanggal hari ini sebagai default
+dateInput.valueAsDate = new Date();
 
 // Format Rupiah
 function formatRupiah(number) {
@@ -42,12 +52,10 @@ function formatRupiah(number) {
     }).format(number);
 }
 
-// Simpan ke localStorage
 function saveTransactions() {
     localStorage.setItem("transactions", JSON.stringify(transactions));
 }
 
-// Hitung ringkasan
 function updateSummary() {
     const income = transactions
         .filter(t => t.type === "income")
@@ -57,31 +65,53 @@ function updateSummary() {
         .filter(t => t.type === "expense")
         .reduce((sum, t) => sum + t.amount, 0);
 
-    const balance = income - expense;
-
-    balanceEl.textContent = formatRupiah(balance);
+    balanceEl.textContent = formatRupiah(income - expense);
     incomeEl.textContent = formatRupiah(income);
     expenseEl.textContent = formatRupiah(expense);
 }
 
-// Render daftar transaksi
-function renderTransactions() {
-    transactionList.innerHTML = "";
+function formatDate(dateStr) {
+    if (!dateStr) return "";
+    const options = { day: "numeric", month: "short", year: "numeric" };
+    return new Date(dateStr + "T00:00:00").toLocaleDateString("id-ID", options);
+}
 
-    let filtered = transactions;
+function renderTransactions() {
+    let filtered = [...transactions];
+
+    // Filter tipe
     if (currentFilter !== "all") {
-        filtered = transactions.filter(t => t.type === currentFilter);
+        filtered = filtered.filter(t => t.type === currentFilter);
     }
 
+    // Search
+    const keyword = searchInput.value.trim().toLowerCase();
+    if (keyword) {
+        filtered = filtered.filter(t =>
+            t.description.toLowerCase().includes(keyword) ||
+            t.category.toLowerCase().includes(keyword)
+        );
+    }
+
+    // Urutkan dari terbaru
+    filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    transactionList.innerHTML = "";
+    transactionCount.textContent = `${filtered.length} transaksi`;
+
     if (filtered.length === 0) {
-        transactionList.innerHTML = `<li class="empty-message">Belum ada transaksi</li>`;
+        transactionList.innerHTML = `
+            <li class="empty-message">
+                <div class="icon">💸</div>
+                <p>Belum ada transaksi</p>
+            </li>
+        `;
         updateSummary();
         return;
     }
 
-    // Tampilkan dari yang terbaru
     filtered.forEach((transaction) => {
-        const index = transactions.indexOf(transaction);
+        const realIndex = transactions.indexOf(transaction);
         const li = document.createElement("li");
         li.className = "transaction-item";
 
@@ -90,12 +120,15 @@ function renderTransactions() {
         li.innerHTML = `
             <div class="transaction-info">
                 <div class="desc">${transaction.description}</div>
-                <div class="meta">${transaction.category} · ${transaction.date}</div>
+                <div class="meta">${transaction.category} · ${formatDate(transaction.date)}</div>
             </div>
-            <div class="transaction-amount ${transaction.type}">
-                ${sign} ${formatRupiah(transaction.amount)}
+            <div class="transaction-right">
+                <div class="transaction-amount ${transaction.type}">
+                    ${sign}${formatRupiah(transaction.amount)}
+                </div>
+                <button class="action-btn edit-btn" data-index="${realIndex}" title="Edit">✎</button>
+                <button class="action-btn delete-btn" data-index="${realIndex}" title="Hapus">×</button>
             </div>
-            <button class="delete-btn" data-index="${index}" title="Hapus">×</button>
         `;
 
         transactionList.appendChild(li);
@@ -104,7 +137,7 @@ function renderTransactions() {
     updateSummary();
 }
 
-// Tambah transaksi
+// Tambah / Update transaksi
 transactionForm.addEventListener("submit", (e) => {
     e.preventDefault();
 
@@ -112,45 +145,75 @@ transactionForm.addEventListener("submit", (e) => {
     const amount = Number(amountInput.value);
     const type = typeSelect.value;
     const category = categorySelect.value;
+    const date = dateInput.value;
 
-    if (!description || amount <= 0) return;
+    if (!description || amount <= 0 || !date) return;
 
-    const now = new Date();
-    const date = now.toLocaleDateString("id-ID", {
-        day: "numeric",
-        month: "short",
-        year: "numeric"
-    });
-
-    transactions.unshift({
-        description,
-        amount,
-        type,
-        category,
-        date
-    });
+    if (editIndex !== null) {
+        // Mode edit
+        transactions[editIndex] = { description, amount, type, category, date };
+        editIndex = null;
+        formTitle.textContent = "Tambah Transaksi";
+        submitBtn.textContent = "+ Tambah";
+        cancelEditBtn.classList.add("hidden");
+    } else {
+        // Mode tambah
+        transactions.unshift({ description, amount, type, category, date });
+    }
 
     saveTransactions();
     renderTransactions();
-
-    // Reset form
-    descriptionInput.value = "";
-    amountInput.value = "";
-    typeSelect.value = "income";
-    categorySelect.value = "Gaji";
-    descriptionInput.focus();
+    resetForm();
 });
 
-// Hapus transaksi
+function resetForm() {
+    descriptionInput.value = "";
+    amountInput.value = "";
+    typeSelect.value = "expense";
+    categorySelect.value = "Makanan";
+    dateInput.valueAsDate = new Date();
+    descriptionInput.focus();
+}
+
+// Cancel edit
+cancelEditBtn.addEventListener("click", () => {
+    editIndex = null;
+    formTitle.textContent = "Tambah Transaksi";
+    submitBtn.textContent = "+ Tambah";
+    cancelEditBtn.classList.add("hidden");
+    resetForm();
+});
+
+// Edit & Delete
 transactionList.addEventListener("click", (e) => {
+    const index = e.target.dataset.index;
+    if (index === undefined) return;
+
     if (e.target.classList.contains("delete-btn")) {
-        const index = e.target.dataset.index;
-        const confirmed = confirm("Hapus transaksi ini?");
+        const confirmed = confirm(`Hapus transaksi "${transactions[index].description}"?`);
         if (confirmed) {
             transactions.splice(index, 1);
             saveTransactions();
             renderTransactions();
         }
+    }
+
+    if (e.target.classList.contains("edit-btn")) {
+        const t = transactions[index];
+        descriptionInput.value = t.description;
+        amountInput.value = t.amount;
+        typeSelect.value = t.type;
+        categorySelect.value = t.category;
+        dateInput.value = t.date;
+
+        editIndex = Number(index);
+        formTitle.textContent = "Edit Transaksi";
+        submitBtn.textContent = "Simpan Perubahan";
+        cancelEditBtn.classList.remove("hidden");
+
+        // Scroll ke form
+        transactionForm.scrollIntoView({ behavior: "smooth" });
+        descriptionInput.focus();
     }
 });
 
@@ -163,6 +226,9 @@ filterButtons.forEach(btn => {
         renderTransactions();
     });
 });
+
+// Search
+searchInput.addEventListener("input", renderTransactions);
 
 // Render awal
 renderTransactions();

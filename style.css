@@ -11,10 +11,10 @@
     --text-secondary: #64748b;
     --primary: #3b82f6;
     --primary-hover: #2563eb;
-    --income: #22c55e;
-    --expense: #ef4444;
+    --income: #16a34a;
+    --expense: #dc2626;
     --border: #e2e8f0;
-    --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    --shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
 }
 
 body.dark-mode {
@@ -23,7 +23,7 @@ body.dark-mode {
     --text: #f1f5f9;
     --text-secondary: #94a3b8;
     --border: #334155;
-    --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    --shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
 }
 
 body {
@@ -33,16 +33,16 @@ body {
     min-height: 100vh;
     display: flex;
     justify-content: center;
-    padding: 2rem 1rem;
+    padding: 1.5rem 1rem;
     transition: background 0.3s, color 0.3s;
 }
 
 .container {
     background: var(--container-bg);
     width: 100%;
-    max-width: 480px;
+    max-width: 500px;
     border-radius: 20px;
-    padding: 1.6rem;
+    padding: 1.5rem;
     box-shadow: var(--shadow);
 }
 
@@ -50,11 +50,11 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.4rem;
 }
 
 h1 {
-    font-size: 1.5rem;
+    font-size: 1.45rem;
     font-weight: 700;
 }
 
@@ -75,12 +75,9 @@ h1 {
     transform: scale(1.05);
 }
 
-/* Summary Cards */
+/* Summary */
 .summary {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.8rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.4rem;
 }
 
 .card {
@@ -90,18 +87,29 @@ h1 {
 }
 
 .card .label {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     color: var(--text-secondary);
     display: block;
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.25rem;
 }
 
 .card h2 {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     font-weight: 700;
 }
 
+.card.balance {
+    margin-bottom: 0.7rem;
+}
+
 .card.balance h2 { color: var(--primary); }
+
+.summary-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.7rem;
+}
+
 .card.income h2 { color: var(--income); }
 .card.expense h2 { color: var(--expense); }
 
@@ -110,24 +118,24 @@ h1 {
     background: var(--bg);
     padding: 1.2rem;
     border-radius: 14px;
-    margin-bottom: 1.3rem;
+    margin-bottom: 1.2rem;
 }
 
 #transactionForm h3 {
     font-size: 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.9rem;
 }
 
 #transactionForm input,
 #transactionForm select {
     width: 100%;
-    padding: 0.75rem 1rem;
+    padding: 0.7rem 0.9rem;
     border: 2px solid var(--border);
     border-radius: 10px;
     font-size: 0.95rem;
     background: var(--container-bg);
     color: var(--text);
-    margin-bottom: 0.7rem;
+    margin-bottom: 0.65rem;
     outline: none;
 }
 
@@ -146,37 +154,62 @@ h1 {
     flex: 1;
 }
 
-#transactionForm button {
-    width: 100%;
-    padding: 0.85rem;
+.form-actions {
+    display: flex;
+    gap: 0.6rem;
+}
+
+#submitBtn {
+    flex: 1;
+    padding: 0.8rem;
     background: var(--primary);
     color: white;
     border: none;
     border-radius: 10px;
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
 }
 
-#transactionForm button:hover {
+#submitBtn:hover {
     background: var(--primary-hover);
 }
 
-/* Filter */
+.cancel-btn {
+    padding: 0.8rem 1.2rem;
+    background: transparent;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.cancel-btn:hover {
+    border-color: var(--expense);
+    color: var(--expense);
+}
+
+/* Toolbar */
+.toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    margin-bottom: 1.1rem;
+}
+
 .filters {
     display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1.2rem;
+    gap: 0.45rem;
 }
 
 .filter-btn {
-    padding: 0.4rem 0.9rem;
+    padding: 0.35rem 0.85rem;
     border: 1px solid var(--border);
     background: transparent;
     color: var(--text-secondary);
     border-radius: 20px;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -192,15 +225,40 @@ h1 {
     border-color: var(--primary);
 }
 
+#searchInput {
+    padding: 0.65rem 1rem;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-size: 0.9rem;
+    background: var(--container-bg);
+    color: var(--text);
+    outline: none;
+}
+
+#searchInput:focus {
+    border-color: var(--primary);
+}
+
 /* Transactions */
-.transactions h3 {
+.transactions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+}
+
+.transactions-header h3 {
     font-size: 1rem;
-    margin-bottom: 0.9rem;
+}
+
+#transactionCount {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
 }
 
 #transactionList {
     list-style: none;
-    max-height: 340px;
+    max-height: 380px;
     overflow-y: auto;
 }
 
@@ -208,7 +266,7 @@ h1 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.9rem 0.6rem;
+    padding: 0.9rem 0.5rem;
     border-bottom: 1px solid var(--border);
     animation: fadeIn 0.3s ease;
 }
@@ -230,49 +288,56 @@ h1 {
 }
 
 .transaction-info .meta {
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
+}
+
+.transaction-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .transaction-amount {
     font-weight: 700;
-    font-size: 1rem;
-    margin-right: 0.8rem;
+    font-size: 0.95rem;
     white-space: nowrap;
 }
 
 .transaction-amount.income { color: var(--income); }
 .transaction-amount.expense { color: var(--expense); }
 
-.delete-btn {
+.action-btn {
     background: none;
     border: none;
-    color: var(--expense);
-    font-size: 1.2rem;
+    font-size: 1rem;
     cursor: pointer;
-    opacity: 0.7;
-    padding: 0.2rem 0.4rem;
+    opacity: 0.65;
+    padding: 0.25rem;
     transition: opacity 0.2s;
 }
 
-.delete-btn:hover {
-    opacity: 1;
-}
+.action-btn:hover { opacity: 1; }
+.edit-btn { color: var(--primary); }
+.delete-btn { color: var(--expense); }
 
 .empty-message {
     text-align: center;
-    padding: 2.5rem 1rem;
+    padding: 2.8rem 1rem;
     color: var(--text-secondary);
-    font-size: 0.95rem;
 }
 
-/* Responsive */
-@media (max-width: 420px) {
-    .container {
-        padding: 1.3rem;
-    }
+.empty-message .icon {
+    font-size: 2.2rem;
+    margin-bottom: 0.6rem;
+    opacity: 0.5;
+}
 
-    .form-row {
-        flex-direction: column;
-    }
+.hidden {
+    display: none !important;
+}
+
+@media (max-width: 420px) {
+    .container { padding: 1.2rem; }
+    .form-row { flex-direction: column; }
 }
