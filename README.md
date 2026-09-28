@@ -1,3 +1,9 @@
+# Belajar Frontend Development.
+
+## Live Demo
+
+https://expense-tracker-chi-gules-41.vercel.app/
+
 # Expense Tracker Pro
 
 Aplikasi pencatat pemasukan dan pengeluaran yang lengkap dan modern. Dibuat menggunakan **HTML, CSS, dan JavaScript** murni + Chart.js.
@@ -90,7 +96,3 @@ expense-tracker/
 - Import data dari CSV
 - Multiple akun / wallet
 - PWA (bisa diinstall di HP)
-
-## Author
-
-Belajar Frontend Development.
