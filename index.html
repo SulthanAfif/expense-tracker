@@ -3,14 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expense Tracker</title>
+    <title>Expense Tracker Pro</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
             <h1>Expense Tracker</h1>
-            <button id="darkModeToggle" class="dark-mode-btn">🌙</button>
+            <div class="header-actions">
+                <select id="currencySelect" title="Mata Uang">
+                    <option value="IDR">Rp</option>
+                    <option value="USD">$</option>
+                    <option value="EUR">€</option>
+                    <option value="JPY">¥</option>
+                    <option value="SGD">S$</option>
+                </select>
+                <button id="darkModeToggle" class="dark-mode-btn">🌙</button>
+            </div>
         </header>
 
         <!-- Summary -->
@@ -31,7 +42,7 @@
             </div>
         </div>
 
-        <!-- Form -->
+        <!-- Form Transaksi -->
         <form id="transactionForm">
             <h3 id="formTitle">Tambah Transaksi</h3>
             
@@ -74,10 +85,56 @@
                 <button class="filter-btn" data-filter="income">Masuk</button>
                 <button class="filter-btn" data-filter="expense">Keluar</button>
             </div>
+
+            <div class="filter-date">
+                <select id="monthFilter">
+                    <option value="all">Semua Bulan</option>
+                </select>
+                <select id="yearFilter">
+                    <option value="all">Semua Tahun</option>
+                </select>
+            </div>
+
             <input type="text" id="searchInput" placeholder="Cari transaksi...">
         </div>
 
-        <!-- List -->
+        <!-- Chart -->
+        <div class="chart-section">
+            <h3>Pengeluaran per Kategori</h3>
+            <canvas id="expenseChart" height="200"></canvas>
+        </div>
+
+        <!-- Budget Section -->
+        <div class="budget-section">
+            <div class="budget-header">
+                <h3>Budget Bulanan</h3>
+                <button id="toggleBudgetForm" class="small-btn">+ Atur Budget</button>
+            </div>
+
+            <form id="budgetForm" class="hidden">
+                <select id="budgetCategory">
+                    <option value="Makanan">Makanan</option>
+                    <option value="Transport">Transport</option>
+                    <option value="Belanja">Belanja</option>
+                    <option value="Tagihan">Tagihan</option>
+                    <option value="Hiburan">Hiburan</option>
+                    <option value="Kesehatan">Kesehatan</option>
+                    <option value="Pendidikan">Pendidikan</option>
+                    <option value="Lainnya">Lainnya</option>
+                </select>
+                <input type="number" id="budgetAmount" placeholder="Jumlah budget" min="1" required>
+                <button type="submit">Simpan</button>
+            </form>
+
+            <div id="budgetList"></div>
+        </div>
+
+        <!-- Export -->
+        <div class="export-section">
+            <button id="exportBtn" class="export-btn">📥 Export ke CSV</button>
+        </div>
+
+        <!-- Transactions -->
         <div class="transactions">
             <div class="transactions-header">
                 <h3>Riwayat Transaksi</h3>

@@ -40,7 +40,7 @@ body {
 .container {
     background: var(--container-bg);
     width: 100%;
-    max-width: 500px;
+    max-width: 520px;
     border-radius: 20px;
     padding: 1.5rem;
     box-shadow: var(--shadow);
@@ -54,8 +54,24 @@ header {
 }
 
 h1 {
-    font-size: 1.45rem;
+    font-size: 1.4rem;
     font-weight: 700;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+#currencySelect {
+    padding: 0.4rem 0.6rem;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: var(--container-bg);
+    color: var(--text);
+    font-size: 0.9rem;
+    cursor: pointer;
 }
 
 .dark-mode-btn {
@@ -76,9 +92,7 @@ h1 {
 }
 
 /* Summary */
-.summary {
-    margin-bottom: 1.4rem;
-}
+.summary { margin-bottom: 1.3rem; }
 
 .card {
     padding: 1rem 1.2rem;
@@ -94,14 +108,11 @@ h1 {
 }
 
 .card h2 {
-    font-size: 1.5rem;
+    font-size: 1.45rem;
     font-weight: 700;
 }
 
-.card.balance {
-    margin-bottom: 0.7rem;
-}
-
+.card.balance { margin-bottom: 0.7rem; }
 .card.balance h2 { color: var(--primary); }
 
 .summary-row {
@@ -171,9 +182,7 @@ h1 {
     cursor: pointer;
 }
 
-#submitBtn:hover {
-    background: var(--primary-hover);
-}
+#submitBtn:hover { background: var(--primary-hover); }
 
 .cancel-btn {
     padding: 0.8rem 1.2rem;
@@ -195,7 +204,7 @@ h1 {
     display: flex;
     flex-direction: column;
     gap: 0.7rem;
-    margin-bottom: 1.1rem;
+    margin-bottom: 1.2rem;
 }
 
 .filters {
@@ -225,6 +234,21 @@ h1 {
     border-color: var(--primary);
 }
 
+.filter-date {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.filter-date select {
+    flex: 1;
+    padding: 0.55rem 0.7rem;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    background: var(--container-bg);
+    color: var(--text);
+    font-size: 0.85rem;
+}
+
 #searchInput {
     padding: 0.65rem 1rem;
     border: 2px solid var(--border);
@@ -235,8 +259,127 @@ h1 {
     outline: none;
 }
 
-#searchInput:focus {
+#searchInput:focus { border-color: var(--primary); }
+
+/* Chart */
+.chart-section {
+    background: var(--bg);
+    padding: 1.2rem;
+    border-radius: 14px;
+    margin-bottom: 1.2rem;
+}
+
+.chart-section h3 {
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+}
+
+/* Budget */
+.budget-section {
+    background: var(--bg);
+    padding: 1.2rem;
+    border-radius: 14px;
+    margin-bottom: 1.2rem;
+}
+
+.budget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.9rem;
+}
+
+.budget-header h3 {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+}
+
+.small-btn {
+    padding: 0.3rem 0.7rem;
+    font-size: 0.8rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+#budgetForm {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+#budgetForm select,
+#budgetForm input {
+    flex: 1;
+    min-width: 120px;
+    padding: 0.55rem 0.7rem;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: var(--container-bg);
+    color: var(--text);
+}
+
+#budgetForm button {
+    padding: 0.55rem 1rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.budget-item {
+    margin-bottom: 0.9rem;
+}
+
+.budget-item-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
+}
+
+.progress-bar {
+    height: 8px;
+    background: var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.4s ease;
+}
+
+.progress-fill.safe { background: #22c55e; }
+.progress-fill.warning { background: #f59e0b; }
+.progress-fill.danger { background: #ef4444; }
+
+/* Export */
+.export-section {
+    margin-bottom: 1.2rem;
+}
+
+.export-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background: transparent;
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.export-btn:hover {
     border-color: var(--primary);
+    color: var(--primary);
 }
 
 /* Transactions */
@@ -247,9 +390,7 @@ h1 {
     margin-bottom: 0.8rem;
 }
 
-.transactions-header h3 {
-    font-size: 1rem;
-}
+.transactions-header h3 { font-size: 1rem; }
 
 #transactionCount {
     font-size: 0.8rem;
@@ -258,7 +399,7 @@ h1 {
 
 #transactionList {
     list-style: none;
-    max-height: 380px;
+    max-height: 360px;
     overflow-y: auto;
 }
 
@@ -266,7 +407,7 @@ h1 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.9rem 0.5rem;
+    padding: 0.85rem 0.4rem;
     border-bottom: 1px solid var(--border);
     animation: fadeIn 0.3s ease;
 }
@@ -276,10 +417,7 @@ h1 {
     to { opacity: 1; transform: translateY(0); }
 }
 
-.transaction-info {
-    flex: 1;
-    min-width: 0;
-}
+.transaction-info { flex: 1; min-width: 0; }
 
 .transaction-info .desc {
     font-weight: 500;
@@ -295,7 +433,7 @@ h1 {
 .transaction-right {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.45rem;
 }
 
 .transaction-amount {
@@ -313,8 +451,7 @@ h1 {
     font-size: 1rem;
     cursor: pointer;
     opacity: 0.65;
-    padding: 0.25rem;
-    transition: opacity 0.2s;
+    padding: 0.2rem;
 }
 
 .action-btn:hover { opacity: 1; }
@@ -323,21 +460,20 @@ h1 {
 
 .empty-message {
     text-align: center;
-    padding: 2.8rem 1rem;
+    padding: 2.5rem 1rem;
     color: var(--text-secondary);
 }
 
 .empty-message .icon {
     font-size: 2.2rem;
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.5rem;
     opacity: 0.5;
 }
 
-.hidden {
-    display: none !important;
-}
+.hidden { display: none !important; }
 
 @media (max-width: 420px) {
     .container { padding: 1.2rem; }
     .form-row { flex-direction: column; }
+    .filter-date { flex-direction: column; }
 }

@@ -18,6 +18,22 @@ darkModeToggle.addEventListener("click", () => {
     }
 });
 
+// ========== State ==========
+let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
+let budgets = JSON.parse(localStorage.getItem("budgets")) || {};
+let currentFilter = "all";
+let editIndex = null;
+let currentCurrency = localStorage.getItem("currency") || "IDR";
+let expenseChart = null;
+
+const currencySymbols = {
+    IDR: "Rp",
+    USD: "$",
+    EUR: "€",
+    JPY: "¥",
+    SGD: "S$"
+};
+
 // ========== Elements ==========
 const transactionForm = document.getElementById("transactionForm");
 const formTitle = document.getElementById("formTitle");
@@ -35,56 +51,50 @@ const expenseEl = document.getElementById("expense");
 const transactionCount = document.getElementById("transactionCount");
 const searchInput = document.getElementById("searchInput");
 const filterButtons = document.querySelectorAll(".filter-btn");
+const monthFilter = document.getElementById("monthFilter");
+const yearFilter = document.getElementById("yearFilter");
+const currencySelect = document.getElementById("currencySelect");
+const budgetForm = document.getElementById("budgetForm");
+const toggleBudgetForm = document.getElementById("toggleBudgetForm");
+const budgetList = document.getElementById("budgetList");
+const exportBtn = document.getElementById("exportBtn");
 
-let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
-let currentFilter = "all";
-let editIndex = null;
-
-// Set tanggal hari ini sebagai default
+// Set default date
 dateInput.valueAsDate = new Date();
+currencySelect.value = currentCurrency;
 
-// Format Rupiah
-function formatRupiah(number) {
-    return new Intl.NumberFormat("id-ID", {
-        style: "currency",
-        currency: "IDR",
-        minimumFractionDigits: 0
-    }).format(number);
+// ========== Helpers ==========
+function formatMoney(number) {
+    const symbol = currencySymbols[currentCurrency];
+    if (currentCurrency === "IDR") {
+        return symbol + " " + new Intl.NumberFormat("id-ID").format(number);
+    }
+    return symbol + " " + new Intl.NumberFormat("en-US", { minimumFractionDigits: 0 }).format(number);
 }
 
-function saveTransactions() {
+function saveData() {
     localStorage.setItem("transactions", JSON.stringify(transactions));
+    localStorage.setItem("budgets", JSON.stringify(budgets));
+    localStorage.setItem("currency", currentCurrency);
 }
 
-function updateSummary() {
-    const income = transactions
-        .filter(t => t.type === "income")
-        .reduce((sum, t) => sum + t.amount, 0);
-
-    const expense = transactions
-        .filter(t => t.type === "expense")
-        .reduce((sum, t) => sum + t.amount, 0);
-
-    balanceEl.textContent = formatRupiah(income - expense);
-    incomeEl.textContent = formatRupiah(income);
-    expenseEl.textContent = formatRupiah(expense);
-}
-
-function formatDate(dateStr) {
-    if (!dateStr) return "";
-    const options = { day: "numeric", month: "short", year: "numeric" };
-    return new Date(dateStr + "T00:00:00").toLocaleDateString("id-ID", options);
-}
-
-function renderTransactions() {
+function getFilteredTransactions() {
     let filtered = [...transactions];
 
-    // Filter tipe
     if (currentFilter !== "all") {
         filtered = filtered.filter(t => t.type === currentFilter);
     }
 
-    // Search
+    const month = monthFilter.value;
+    const year = yearFilter.value;
+
+    if (month !== "all") {
+        filtered = filtered.filter(t => t.date.substring(5, 7) === month);
+    }
+    if (year !== "all") {
+        filtered = filtered.filter(t => t.date.substring(0, 4) === year);
+    }
+
     const keyword = searchInput.value.trim().toLowerCase();
     if (keyword) {
         filtered = filtered.filter(t =>
@@ -93,9 +103,24 @@ function renderTransactions() {
         );
     }
 
-    // Urutkan dari terbaru
-    filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+    return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+}
 
+// ========== Summary ==========
+function updateSummary() {
+    const filtered = getFilteredTransactions();
+
+    const income = filtered.filter(t => t.type === "income").reduce((s, t) => s + t.amount, 0);
+    const expense = filtered.filter(t => t.type === "expense").reduce((s, t) => s + t.amount, 0);
+
+    balanceEl.textContent = formatMoney(income - expense);
+    incomeEl.textContent = formatMoney(income);
+    expenseEl.textContent = formatMoney(expense);
+}
+
+// ========== Render Transactions ==========
+function renderTransactions() {
+    const filtered = getFilteredTransactions();
     transactionList.innerHTML = "";
     transactionCount.textContent = `${filtered.length} transaksi`;
 
@@ -104,40 +129,180 @@ function renderTransactions() {
             <li class="empty-message">
                 <div class="icon">💸</div>
                 <p>Belum ada transaksi</p>
-            </li>
-        `;
+            </li>`;
         updateSummary();
+        updateChart();
+        renderBudgets();
         return;
     }
 
-    filtered.forEach((transaction) => {
-        const realIndex = transactions.indexOf(transaction);
+    filtered.forEach(t => {
+        const realIndex = transactions.indexOf(t);
         const li = document.createElement("li");
         li.className = "transaction-item";
-
-        const sign = transaction.type === "income" ? "+" : "-";
+        const sign = t.type === "income" ? "+" : "-";
 
         li.innerHTML = `
             <div class="transaction-info">
-                <div class="desc">${transaction.description}</div>
-                <div class="meta">${transaction.category} · ${formatDate(transaction.date)}</div>
+                <div class="desc">${t.description}</div>
+                <div class="meta">${t.category} · ${formatDate(t.date)}</div>
             </div>
             <div class="transaction-right">
-                <div class="transaction-amount ${transaction.type}">
-                    ${sign}${formatRupiah(transaction.amount)}
-                </div>
-                <button class="action-btn edit-btn" data-index="${realIndex}" title="Edit">✎</button>
-                <button class="action-btn delete-btn" data-index="${realIndex}" title="Hapus">×</button>
+                <div class="transaction-amount ${t.type}">${sign}${formatMoney(t.amount)}</div>
+                <button class="action-btn edit-btn" data-index="${realIndex}">✎</button>
+                <button class="action-btn delete-btn" data-index="${realIndex}">×</button>
             </div>
         `;
-
         transactionList.appendChild(li);
     });
 
     updateSummary();
+    updateChart();
+    renderBudgets();
 }
 
-// Tambah / Update transaksi
+function formatDate(dateStr) {
+    return new Date(dateStr + "T00:00:00").toLocaleDateString("id-ID", {
+        day: "numeric", month: "short", year: "numeric"
+    });
+}
+
+// ========== Chart ==========
+function updateChart() {
+    const filtered = getFilteredTransactions().filter(t => t.type === "expense");
+    const categoryTotals = {};
+
+    filtered.forEach(t => {
+        categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
+    });
+
+    const labels = Object.keys(categoryTotals);
+    const data = Object.values(categoryTotals);
+
+    const ctx = document.getElementById("expenseChart").getContext("2d");
+
+    if (expenseChart) expenseChart.destroy();
+
+    expenseChart = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: [
+                    "#3b82f6", "#ef4444", "#f59e0b", "#22c55e",
+                    "#8b5cf6", "#ec4899", "#06b6d4", "#84cc16"
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    position: "bottom",
+                    labels: { color: getComputedStyle(document.body).getPropertyValue('--text') }
+                }
+            }
+        }
+    });
+}
+
+// ========== Budget ==========
+function renderBudgets() {
+    budgetList.innerHTML = "";
+    const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+
+    Object.keys(budgets).forEach(cat => {
+        const spent = transactions
+            .filter(t => t.type === "expense" && t.category === cat && t.date.startsWith(currentMonth))
+            .reduce((s, t) => s + t.amount, 0);
+
+        const budget = budgets[cat];
+        const percent = Math.min((spent / budget) * 100, 100);
+        let status = "safe";
+        if (percent >= 90) status = "danger";
+        else if (percent >= 70) status = "warning";
+
+        const div = document.createElement("div");
+        div.className = "budget-item";
+        div.innerHTML = `
+            <div class="budget-item-header">
+                <span>${cat}</span>
+                <span>${formatMoney(spent)} / ${formatMoney(budget)}</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill ${status}" style="width: ${percent}%"></div>
+            </div>
+        `;
+        budgetList.appendChild(div);
+    });
+}
+
+toggleBudgetForm.addEventListener("click", () => {
+    budgetForm.classList.toggle("hidden");
+});
+
+budgetForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const cat = document.getElementById("budgetCategory").value;
+    const amount = Number(document.getElementById("budgetAmount").value);
+    if (amount > 0) {
+        budgets[cat] = amount;
+        saveData();
+        renderBudgets();
+        budgetForm.reset();
+        budgetForm.classList.add("hidden");
+    }
+});
+
+// ========== Month & Year Filter ==========
+function populateDateFilters() {
+    const months = new Set();
+    const years = new Set();
+
+    transactions.forEach(t => {
+        months.add(t.date.substring(5, 7));
+        years.add(t.date.substring(0, 4));
+    });
+
+    const monthNames = ["01","02","03","04","05","06","07","08","09","10","11","12"];
+    monthFilter.innerHTML = `<option value="all">Semua Bulan</option>`;
+    monthNames.forEach(m => {
+        if (months.has(m)) {
+            const name = new Date(`2024-${m}-01`).toLocaleString("id-ID", { month: "long" });
+            monthFilter.innerHTML += `<option value="${m}">${name}</option>`;
+        }
+    });
+
+    yearFilter.innerHTML = `<option value="all">Semua Tahun</option>`;
+    [...years].sort().reverse().forEach(y => {
+        yearFilter.innerHTML += `<option value="${y}">${y}</option>`;
+    });
+}
+
+// ========== Export CSV ==========
+exportBtn.addEventListener("click", () => {
+    const filtered = getFilteredTransactions();
+    if (filtered.length === 0) {
+        alert("Tidak ada data untuk diexport");
+        return;
+    }
+
+    let csv = "Tanggal,Keterangan,Kategori,Tipe,Jumlah\n";
+    filtered.forEach(t => {
+        csv += `${t.date},"${t.description}",${t.category},${t.type},${t.amount}\n`;
+    });
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `expense-tracker-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+});
+
+// ========== Form Submit ==========
 transactionForm.addEventListener("submit", (e) => {
     e.preventDefault();
 
@@ -150,18 +315,17 @@ transactionForm.addEventListener("submit", (e) => {
     if (!description || amount <= 0 || !date) return;
 
     if (editIndex !== null) {
-        // Mode edit
         transactions[editIndex] = { description, amount, type, category, date };
         editIndex = null;
         formTitle.textContent = "Tambah Transaksi";
         submitBtn.textContent = "+ Tambah";
         cancelEditBtn.classList.add("hidden");
     } else {
-        // Mode tambah
         transactions.unshift({ description, amount, type, category, date });
     }
 
-    saveTransactions();
+    saveData();
+    populateDateFilters();
     renderTransactions();
     resetForm();
 });
@@ -175,7 +339,6 @@ function resetForm() {
     descriptionInput.focus();
 }
 
-// Cancel edit
 cancelEditBtn.addEventListener("click", () => {
     editIndex = null;
     formTitle.textContent = "Tambah Transaksi";
@@ -184,16 +347,16 @@ cancelEditBtn.addEventListener("click", () => {
     resetForm();
 });
 
-// Edit & Delete
+// ========== Edit & Delete ==========
 transactionList.addEventListener("click", (e) => {
     const index = e.target.dataset.index;
     if (index === undefined) return;
 
     if (e.target.classList.contains("delete-btn")) {
-        const confirmed = confirm(`Hapus transaksi "${transactions[index].description}"?`);
-        if (confirmed) {
+        if (confirm(`Hapus transaksi "${transactions[index].description}"?`)) {
             transactions.splice(index, 1);
-            saveTransactions();
+            saveData();
+            populateDateFilters();
             renderTransactions();
         }
     }
@@ -205,19 +368,15 @@ transactionList.addEventListener("click", (e) => {
         typeSelect.value = t.type;
         categorySelect.value = t.category;
         dateInput.value = t.date;
-
         editIndex = Number(index);
         formTitle.textContent = "Edit Transaksi";
         submitBtn.textContent = "Simpan Perubahan";
         cancelEditBtn.classList.remove("hidden");
-
-        // Scroll ke form
         transactionForm.scrollIntoView({ behavior: "smooth" });
-        descriptionInput.focus();
     }
 });
 
-// Filter
+// ========== Events ==========
 filterButtons.forEach(btn => {
     btn.addEventListener("click", () => {
         filterButtons.forEach(b => b.classList.remove("active"));
@@ -227,8 +386,16 @@ filterButtons.forEach(btn => {
     });
 });
 
-// Search
 searchInput.addEventListener("input", renderTransactions);
+monthFilter.addEventListener("change", renderTransactions);
+yearFilter.addEventListener("change", renderTransactions);
 
-// Render awal
+currencySelect.addEventListener("change", () => {
+    currentCurrency = currencySelect.value;
+    saveData();
+    renderTransactions();
+});
+
+// ========== Init ==========
+populateDateFilters();
 renderTransactions();
